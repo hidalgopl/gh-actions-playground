@@ -1,0 +1,51 @@
+name: Sync Config
+on:
+  release:
+    types:
+      - created
+      - edited
+      - published
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    outputs:
+      latest_release_tag: ${{ steps.release.outputs.latest_release }}
+      is_latest_release: ${{ steps.release.outputs.is_latest_release }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure git
+        run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
+        env:
+          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Get release info
+        id: release
+        run: |
+          RELEASE_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/latest")
+
+          LATEST_RELEASE_NAME=$(echo "$RELEASE_JSON" | jq -r '.name')
+          IS_LATEST=$(echo "$RELEASE_JSON" | jq -r '.prerelease')
+
+          echo "Latest release name: $LATEST_RELEASE_NAME"
+          echo "Is latest release: $IS_LATEST"
+          echo "latest_release=$LATEST_RELEASE_NAME" >> "$GITHUB_OUTPUT"
+          echo "is_latest_release=$IS_LATEST" >> "$GITHUB_OUTPUT"
+      - name: i am latest
+        if: ${{ steps.release.outputs.is_latest_release }}
+        run: |
+          echo "i am the latest"
+      - name: run always
+        env:
+          IS_LATEST: ${{ steps.release.outputs.is_latest_release }}
+          LATEST_TAG: ${{ steps.release.outputs.latest_release }}
+        run: |
+          echo "i may be not the latest one $IS_LATEST $LATEST_TAG"
+
