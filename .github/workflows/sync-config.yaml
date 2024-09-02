@@ -2,7 +2,7 @@ name: Sync Config
 on:
   release:
     types:
-      - edited
+      - released
       - published
 jobs:
   sync:
