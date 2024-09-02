@@ -37,7 +37,7 @@ jobs:
           echo "latest_release=$LATEST_RELEASE_NAME" >> "$GITHUB_OUTPUT"
           echo "is_latest_release=$IS_LATEST" >> "$GITHUB_OUTPUT"
       - name: i am latest
-        if: ${{ steps.release.outputs.is_latest_release }}
+        if: ${{ steps.release.outputs.is_latest_release == 'true' }}
         run: |
           echo "i am the latest"
       - name: run always
