@@ -34,9 +34,9 @@ jobs:
           fi
           echo "release_tag=${final_tag}" >> "$GITHUB_OUTPUT"
           if [[ ${final_tag} == *"-beta."* || ${final_tag} == *"-alpha."* ]]; then
-            echo "skip_update="true" >> "$GITHUB_OUTPUT"
+            echo "skip_update=true" >> "$GITHUB_OUTPUT"
           else
-            echo "skip_update="false" >> "$GITHUB_OUTPUT"
+            echo "skip_update=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Checkout repo
         if: ${{ steps.release.outputs.skip_update == 'false' }}
