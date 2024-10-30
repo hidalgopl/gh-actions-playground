@@ -26,10 +26,10 @@ jobs:
         run: |
           if [[ ! -z "${MANUAL_TAG}" ]]; then
             echo "Manually set tag: ${MANUAL_TAG}"
-            echo "release_tag="${MANUAL_TAG}" >> "$GITHUB_OUTPUT"
+            echo "release_tag=${MANUAL_TAG}" >> "$GITHUB_OUTPUT"
           else
             echo "Tag from release event: ${{ github.event.release.tag_name }}"
-            echo "release_tag="${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+            echo "release_tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Skip updates on alpha or beta versions
