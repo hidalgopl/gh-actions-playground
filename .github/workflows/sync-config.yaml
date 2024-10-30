@@ -48,8 +48,6 @@ jobs:
       - name: Skip updates on alpha or beta versions
         if: ${{ steps.release.outputs.skip_update == 'true' }}
         run: |
-          git status
-          git log
           echo "skipping updates in platform schema, because the tag is alpha/beta: ${{ steps.release.outputs.release_tag }}"
 
       - name: Update platform schema in vcluster-config
