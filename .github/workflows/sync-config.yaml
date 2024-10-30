@@ -21,7 +21,7 @@ jobs:
         env:
           MANUAL_TAG: ${{ inputs.releaseTag }}
         run: |
-          if [[ ! -z "${MANUAL_TAG}" ]]; then
+          if [[ -n "${MANUAL_TAG}" ]]; then
             echo "Manually set tag: ${MANUAL_TAG}"
             echo "release_tag=${MANUAL_TAG}" >> "$GITHUB_OUTPUT"
           else
