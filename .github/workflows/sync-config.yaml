@@ -2,14 +2,19 @@ name: Sync Config
 on:
   release:
     types:
-      - released
-      - published
+      - published # this will run whenever a release (or pre-release is created)
+      - released # this will run when a (not-pre-)release is created or was changed from pre-release to a release
+  workflow_dispatch:
+    inputs:
+      releaseTag:
+        description: 'Release tag in form vX.Y.Z'
+        required: true
+        type: string
 jobs:
   sync:
     runs-on: ubuntu-latest
     outputs:
-      latest_release_tag: ${{ steps.release.outputs.latest_release }}
-      is_latest_release: ${{ steps.release.outputs.is_latest_release }}
+      release_tag: ${{ steps.release.outputs.release_tag }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -19,30 +24,32 @@ jobs:
         env:
           GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
-      - name: Get release info
-        id: release
-        run: |
-          RELEASE_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/latest")
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
 
-          LATEST_RELEASE_NAME=$(echo "$RELEASE_JSON" | jq -r '.name')
-          IS_LATEST="false"
-          if [[ "${LATEST_RELEASE_NAME}" == "${{ github.event.release.tag_name }}" ]]; then
-            IS_LATEST="true"
+      # this is to support both manually trigger workflows, and automatically triggered on release creation
+      - name: Determine release tag
+        id: release
+        env:
+          MANUAL_TAG: ${{ inputs.releaseTag }}
+        run: |
+          if [[ ! -z "${MANUAL_TAG}" ]]; then
+            echo "Manually set tag: ${MANUAL_TAG}"
+            echo "release_tag="${MANUAL_TAG}" >> "$GITHUB_OUTPUT"
+          else
+            echo "Tag from release event: ${{ github.event.release.tag_name }}"
+            echo "release_tag="${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
           fi
 
-          echo "Latest release name: $LATEST_RELEASE_NAME"
-          echo "Is latest release: $IS_LATEST"
-          echo "latest_release=$LATEST_RELEASE_NAME" >> "$GITHUB_OUTPUT"
-          echo "is_latest_release=$IS_LATEST" >> "$GITHUB_OUTPUT"
-      - name: i am latest
-        if: ${{ steps.release.outputs.is_latest_release == 'true' }}
+      - name: Skip updates on alpha or beta versions
+        if: ${{ contains(steps.release.outputs.release_tag, 'alpha') || contains(steps.release.outputs.release_tag, 'beta') }}
         run: |
-          echo "i am the latest"
-      - name: run always
-        env:
-          IS_LATEST: ${{ steps.release.outputs.is_latest_release }}
-          LATEST_TAG: ${{ steps.release.outputs.latest_release }}
+          echo "skipping updates in platform schema, because the tag is alpha/beta: ${{ steps.release.outputs.release_tag }}"
+
+      - name: Update platform schema in vcluster-config
+        if: ${{ ! contains(steps.release.outputs.release_tag, 'alpha') && ! contains(steps.release.outputs.release_tag, 'beta') }}
         run: |
-          echo "i may be not the latest one $IS_LATEST $LATEST_TAG"
+          echo "update platform schema"
 
