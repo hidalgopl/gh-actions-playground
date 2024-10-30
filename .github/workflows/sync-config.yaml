@@ -15,9 +15,6 @@ jobs:
     outputs:
       release_tag: ${{ steps.release.outputs.release_tag }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
       # this is to support both manually trigger workflows, and automatically triggered on release creation
       - name: Determine release tag
         id: release
@@ -31,14 +28,23 @@ jobs:
             echo "Tag from release event: ${{ github.event.release.tag_name }}"
             echo "release_tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
           fi
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: 'true'
+          ref: 'refs/tags/${{ steps.release.outputs.release_tag }}'
 
       - name: Skip updates on alpha or beta versions
         if: ${{ contains(steps.release.outputs.release_tag, 'alpha') || contains(steps.release.outputs.release_tag, 'beta') }}
         run: |
+          git status
+          git log
           echo "skipping updates in platform schema, because the tag is alpha/beta: ${{ steps.release.outputs.release_tag }}"
 
       - name: Update platform schema in vcluster-config
         if: ${{ ! contains(steps.release.outputs.release_tag, 'alpha') && ! contains(steps.release.outputs.release_tag, 'beta') }}
         run: |
+          git status
+          git log
           echo "update platform schema"
 
