@@ -2,7 +2,6 @@ name: Sync Config
 on:
   release:
     types:
-      - published # this will run whenever a release (or pre-release is created)
       - released # this will run when a (not-pre-)release is created or was changed from pre-release to a release
   workflow_dispatch:
     inputs:
@@ -18,16 +17,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
-      - name: Configure git
-        run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
-        env:
-          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
 
       # this is to support both manually trigger workflows, and automatically triggered on release creation
       - name: Determine release tag
