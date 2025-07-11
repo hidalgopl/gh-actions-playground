@@ -1,6 +1,6 @@
 name: Upload release asset
 permissions:
-  contents: read
+  contents: write
 on:
   workflow_dispatch:
     inputs:
