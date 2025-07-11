@@ -1,8 +1,7 @@
-name: Sync Config
+name: Upload release asset
+permissions:
+  contents: read
 on:
-  release:
-    types:
-      - released # this will run when a (not-pre-)release is created or was changed from pre-release to a release
   workflow_dispatch:
     inputs:
       releaseTag:
@@ -11,40 +10,20 @@ on:
         type: string
 jobs:
   sync:
-    runs-on: ubuntu-latest
-    outputs:
-      release_tag: ${{ steps.release.outputs.release_tag }}
+    runs-on: ubuntu-22.04
     steps:
-      # this is to support both manually trigger workflows, and automatically triggered on release creation
-      - name: Determine release tag
-        id: release
-        env:
-          MANUAL_TAG: ${{ inputs.releaseTag }}
-        run: |
-          if [[ ! -z "${MANUAL_TAG}" ]]; then
-            echo "Manually set tag: ${MANUAL_TAG}"
-            echo "release_tag=${MANUAL_TAG}" >> "$GITHUB_OUTPUT"
-          else
-            echo "Tag from release event: ${{ github.event.release.tag_name }}"
-            echo "release_tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-tags: 'true'
-          ref: 'refs/tags/${{ steps.release.outputs.release_tag }}'
+          fetch-depth: 0
+      - run: git fetch --force --tags
 
-      - name: Skip updates on alpha or beta versions
-        if: ${{ contains(steps.release.outputs.release_tag, 'alpha') || contains(steps.release.outputs.release_tag, 'beta') }}
+      - name: upload release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git status
-          git log
-          echo "skipping updates in platform schema, because the tag is alpha/beta: ${{ steps.release.outputs.release_tag }}"
-
-      - name: Update platform schema in vcluster-config
-        if: ${{ ! contains(steps.release.outputs.release_tag, 'alpha') && ! contains(steps.release.outputs.release_tag, 'beta') }}
-        run: |
-          git status
-          git log
-          echo "update platform schema"
+          gh release upload  "v0.0.8" \
+            ./readme.md \
+            ./vcluster-*-x.txt \
+            --repo hidalgopl/gh-actions-playground \
+            --clobber
 
