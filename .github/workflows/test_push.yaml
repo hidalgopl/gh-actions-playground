@@ -26,7 +26,6 @@ jobs:
           platforms: linux/amd64
           file: ./fips/Dockerfile.full
           tags: ghcr.io/hidalgopl/kubernetes:v1.33.3-fips-full
-          build-args: |
-            ${{ steps.build-args.outputs.args }}
+          build-args: ${{ steps.build-args.outputs.args }}
 
 
