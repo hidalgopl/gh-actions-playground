@@ -24,5 +24,3 @@ jobs:
           tags: ghcr.io/hidalgopl/kubernetes:v1.33.3-fips-full
           build-args: |
             ${{ steps.build-args.outputs.args }}
-
-
