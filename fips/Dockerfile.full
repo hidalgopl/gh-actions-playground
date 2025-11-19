@@ -1,0 +1,20 @@
+ARG NGINX_BASE_IMAGE=""
+ARG BUSYBOX_BASE_IMAGE=""
+
+LABEL maintainer="vCluster Labs <support@vcluster.com>"
+LABEL description="test"
+
+FROM ${KUBERNETES_BASE_IMAGE} AS k8s-local
+FROM ${BUSYBOX_BASE_IMAGE} AS etcd-fips
+# we use the distroless base-nossl debug image, as it contains
+# a basic shell, glibc and nothing else.
+FROM gcr.io/distroless/base-nossl:debug
+
+ARG K8S_VERSION="v1.33.0"
+
+# Must be aligned with https://github.com/loft-sh/kubernetes/blob/main/Dockerfile#L30-L33
+COPY --chown=kubernetes:kubernetes --from=k8s-local /kubernetes/kube-apiserver /kubernetes/kube-apiserver
+COPY --chown=kubernetes:kubernetes --from=k8s-local /kubernetes/kube-controller-manager /kubernetes/kube-controller-manager
+# Set up the container
+WORKDIR /
+USER kubernetes

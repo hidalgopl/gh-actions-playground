@@ -1,0 +1,28 @@
+name: Kubernetes FIPS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-k8s-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read build args
+        id: build-args
+        run: echo "args=$(cat ./fips/build-args.txt)" >> $GITHUB_OUTPUT
+
+      - name: Build and push k8s full image
+        id: pushfull
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64
+          context: ./fips
+          file: ./fips/Dockerfile.full
+          tags: ghcr.io/hidalgopl/kubernetes:v1.33.3-fips-full
+          build-args: |
+            ${{ steps.build-args.outputs.args }}
+
+
