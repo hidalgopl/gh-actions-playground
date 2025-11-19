@@ -19,7 +19,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
-          context: ./fips
           file: ./fips/Dockerfile.full
           tags: ghcr.io/hidalgopl/kubernetes:v1.33.3-fips-full
           build-args: |
