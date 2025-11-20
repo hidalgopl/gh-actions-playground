@@ -1,14 +1,15 @@
 ARG NGINX_BASE_IMAGE=""
 ARG BUSYBOX_BASE_IMAGE=""
 
-LABEL maintainer="vCluster Labs <support@vcluster.com>"
-LABEL description="test"
 
 FROM ${NGINX_BASE_IMAGE} AS k8s-local
 FROM ${BUSYBOX_BASE_IMAGE} AS etcd-fips
 # we use the distroless base-nossl debug image, as it contains
 # a basic shell, glibc and nothing else.
 FROM gcr.io/distroless/base-nossl:debug
+
+LABEL maintainer="vCluster Labs <support@vcluster.com>"
+LABEL description="test"
 
 ARG K8S_VERSION="v1.33.0"
 
