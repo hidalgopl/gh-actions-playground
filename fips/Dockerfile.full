@@ -4,7 +4,7 @@ ARG BUSYBOX_BASE_IMAGE=""
 LABEL maintainer="vCluster Labs <support@vcluster.com>"
 LABEL description="test"
 
-FROM ${KUBERNETES_BASE_IMAGE} AS k8s-local
+FROM ${NGINX_BASE_IMAGE} AS k8s-local
 FROM ${BUSYBOX_BASE_IMAGE} AS etcd-fips
 # we use the distroless base-nossl debug image, as it contains
 # a basic shell, glibc and nothing else.
