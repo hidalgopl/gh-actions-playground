@@ -19,7 +19,7 @@ jobs:
         id: build-args
         run: |
           echo "args<<EOF" >> $GITHUB_OUTPUT
-          cat build-args.txt >> $GITHUB_OUTPUT
+          cat ./fips/build-args.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and push k8s full image
